@@ -14,13 +14,26 @@ func main() {
     }
 
     // Listen to the root path of the web app
-    http.HandleFunc("/", handler)
+    http.HandleFunc("/session", wrapCors(sessionHandler))
 
     // Start a web server.
     http.ListenAndServe(":" + port, nil)
 }
 
-// The handler for the root path.
-func handler(writer http.ResponseWriter, request *http.Request) {
-    fmt.Fprintf(writer, "Hello, World")
+func wrapCors(h http.HandlerFunc) http.HandlerFunc {
+    return func(writer http.ResponseWriter, request *http.Request) {
+        writer.Header().Add("Access-Control-Allow-Origin", "http://localhost:9000")
+        writer.Header().Add("Access-Control-Allow-Credentials", "true")
+        if request.Method == "OPTIONS" {
+        } else {
+            h(writer, request)
+        }
+    }
 }
+
+func sessionHandler(writer http.ResponseWriter, request *http.Request) {
+    fmt.Println(*request)
+    writer.Header().Add("Content-Type", "application/json")
+    writer.WriteHeader(404)
+}
+
