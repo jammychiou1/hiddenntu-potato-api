@@ -15,7 +15,7 @@ func main() {
     }
 
     sessionController := SessionController{
-        SessionMap: map[[256]byte]Session{},
+        SessionMap: map[SessionID]Session{},
     }
 
     port := os.Getenv("PORT")

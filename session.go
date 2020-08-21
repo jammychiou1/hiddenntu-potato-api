@@ -7,31 +7,36 @@ import (
     "encoding/base64"
     "crypto/rand"
 )
+const (
+    SessionMaxAge = 1 * time.Hour
+    //SessionMaxAge = 10 * time.Second
+)
+type SessionID [256]byte
 type Session struct {
     UserData UserData
     Timer *time.Timer
 }
 type SessionController struct {
     Lock sync.RWMutex
-    SessionMap map[[256]byte]Session
+    SessionMap map[SessionID]Session
 }
 
-func (sc *SessionController) GetSessionUserData(id [256]byte) (UserData, bool) {
+func (sc *SessionController) GetSessionUserData(id SessionID) (UserData, bool) {
     sc.Lock.RLock()
     session, ok := sc.SessionMap[id]
     userData := UserData{}
     if ok {
         //potential data race: timer tries to delete session but before acquiring the write lock, the timer is reset
         session.Timer.Stop()
-        session.Timer.Reset(3 * time.Minute)
+        session.Timer.Reset(SessionMaxAge)
         userData = session.UserData
     }
     sc.Lock.RUnlock()
     return userData, ok
 }
 
-func (sc *SessionController) NewSession(username string) ([256]byte, UserData) {
-    var id [256]byte
+func (sc *SessionController) NewSession(username string) (SessionID, UserData) {
+    var id SessionID
     sc.Lock.Lock()
     for {
         rand.Read(id[:])
@@ -40,11 +45,12 @@ func (sc *SessionController) NewSession(username string) ([256]byte, UserData) {
             break
         }
     }
-    fmt.Println(id)
+    fmt.Println("Session created")
     userData := UserData{username}
     sc.SessionMap[id] = Session{
         userData,
-        time.AfterFunc(3 * time.Minute, func() {
+        time.AfterFunc(SessionMaxAge, func() {
+            fmt.Println("Session timed out")
             sc.DeleteSession(id)
         }),
     }
@@ -52,7 +58,7 @@ func (sc *SessionController) NewSession(username string) ([256]byte, UserData) {
     return id, userData
 }
 
-func (sc *SessionController) DeleteSession(id [256]byte) {
+func (sc *SessionController) DeleteSession(id SessionID) {
     sc.Lock.Lock()
     session, ok := sc.SessionMap[id]
     if ok {
@@ -61,8 +67,8 @@ func (sc *SessionController) DeleteSession(id [256]byte) {
     }
     sc.Lock.Unlock()
 }
-func StringToId(idString string) ([256]byte, error) {
-    id := [256]byte{}
+func StringToId(idString string) (SessionID, error) {
+    id := SessionID{}
     idSlice, err := base64.URLEncoding.DecodeString(idString)
     if err != nil {
         return id, err
@@ -73,6 +79,6 @@ func StringToId(idString string) ([256]byte, error) {
     copy(id[:], idSlice)
     return id, nil
 }
-func IdToString(id [256]byte) string {
+func IdToString(id SessionID) string {
     return base64.URLEncoding.EncodeToString(id[:])
 }
