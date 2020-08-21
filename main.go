@@ -59,37 +59,17 @@ func CreateSessionHandler(sessionController *SessionController, userMap *UserMap
             id, err := StringToId(idString)
             if err != nil {
                 fmt.Println(err)
-                clearCookie := http.Cookie{
-                    Name: "SESSION_ID",
-                    Value: "",
-                    Path: cookie.Path,
-                    MaxAge: 0,
-                    HttpOnly: true,
-                }
-                http.SetCookie(writer, &clearCookie)
+                ClearSessionID(writer)
                 writer.WriteHeader(http.StatusUnauthorized)
                 return
             }
             userData, ok := sessionController.GetSessionUserData(id)
             if !ok {
-                clearCookie := http.Cookie{
-                    Name: "SESSION_ID",
-                    Value: "",
-                    Path: cookie.Path,
-                    MaxAge: 0,
-                    HttpOnly: true,
-                }
-                http.SetCookie(writer, &clearCookie)
+                ClearSessionID(writer)
                 writer.WriteHeader(http.StatusUnauthorized)
                 return
             }
-            newCookie := http.Cookie{
-                Name: "SESSION_ID",
-                Value: idString,
-                Path: "session",
-                HttpOnly: true,
-            }
-            http.SetCookie(writer, &newCookie)
+            SetSessionID(writer, idString)
             writer.Header().Add("Content-Type", "application/json")
             writer.WriteHeader(http.StatusOK)
             json.NewEncoder(writer).Encode(userData)
@@ -113,19 +93,55 @@ func CreateSessionHandler(sessionController *SessionController, userMap *UserMap
             }
             id, userData := sessionController.NewSession(username)
             idString := IdToString(id)
-            newCookie := http.Cookie{
-                Name: "SESSION_ID",
-                Value: idString,
-                Path: "session",
-                HttpOnly: true,
-            }
-            http.SetCookie(writer, &newCookie)
+            SetSessionID(writer, idString)
             writer.Header().Add("Content-Type", "application/json")
             writer.WriteHeader(http.StatusOK)
             json.NewEncoder(writer).Encode(userData)
             return
         }
+        if request.Method == http.MethodDelete {
+            cookie, err := request.Cookie("SESSION_ID")
+            if err != nil {
+                fmt.Println(err)
+                writer.WriteHeader(http.StatusOK)
+                return
+            }
+            idString := cookie.Value
+            id, err := StringToId(idString)
+            if err != nil {
+                fmt.Println(err)
+                writer.WriteHeader(http.StatusOK)
+                return
+            }
+            sessionController.DeleteSession(id)
+            ClearSessionID(writer)
+            writer.WriteHeader(http.StatusOK)
+            return
+        }
         writer.WriteHeader(http.StatusBadRequest)
     }
+}
+
+func ClearSessionID(writer http.ResponseWriter) {
+    clearCookie := http.Cookie{
+        Name: "SESSION_ID",
+        Value: "",
+        Path: "session",
+        MaxAge: -1,
+        HttpOnly: true,
+        SameSite: http.SameSiteLaxMode,
+    }
+    http.SetCookie(writer, &clearCookie)
+}
+
+func SetSessionID(writer http.ResponseWriter, idString string) {
+    newCookie := http.Cookie{
+        Name: "SESSION_ID",
+        Value: idString,
+        Path: "session",
+        HttpOnly: true,
+        SameSite: http.SameSiteLaxMode,
+    }
+    http.SetCookie(writer, &newCookie)
 }
 
