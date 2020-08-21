@@ -31,7 +31,7 @@ func main() {
     }
 
     if os.Getenv("MODE") == "production" {
-        ClientHost = ""
+        ClientHost = "https://www.csie.ntu.edu.tw"
     } else {
         ClientHost = "http://localhost:9000"
     }
