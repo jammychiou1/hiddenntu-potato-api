@@ -40,10 +40,10 @@ func main() {
     // Listen to the root path of the web app
     http.HandleFunc("/" + SessionPath, WrapCors(CreateSessionHandler(&sessionController, &userMap)))
 
+    fmt.Println("listening on port " + port)
+
     // Start a web server.
     http.ListenAndServe(":" + port, nil)
-
-    fmt.Println("listening on port " + port)
 }
 
 func WrapCors(h http.HandlerFunc) http.HandlerFunc {
