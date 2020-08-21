@@ -35,12 +35,15 @@ func main() {
     } else {
         ClientHost = "http://localhost:9000"
     }
+    fmt.Println("expecting request from " + ClientHost)
 
     // Listen to the root path of the web app
     http.HandleFunc("/" + SessionPath, WrapCors(CreateSessionHandler(&sessionController, &userMap)))
 
     // Start a web server.
     http.ListenAndServe(":" + port, nil)
+
+    fmt.Println("listening on port " + port)
 }
 
 func WrapCors(h http.HandlerFunc) http.HandlerFunc {
