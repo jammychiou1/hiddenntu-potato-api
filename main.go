@@ -154,6 +154,7 @@ func SetSessionID(writer http.ResponseWriter, idString string) {
         Name: SessionIDCookieName,
         Value: idString,
         Path: SessionPath,
+        MaxAge: 30 * 60, //30 minutes
         HttpOnly: true,
         SameSite: http.SameSiteLaxMode,
     }
