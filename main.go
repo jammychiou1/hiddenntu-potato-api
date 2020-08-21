@@ -7,6 +7,12 @@ import (
     "encoding/json"
 )
 
+const (
+    SessionIDCookieName = "SESSION_ID"
+    SessionPath = "session"
+)
+var ClientHost string
+
 func main() {
     userMap := UserMap{
         Data: map[string]User{
@@ -24,8 +30,14 @@ func main() {
 	    port = "8080"
     }
 
+    if os.Getenv("MODE") == "production" {
+        ClientHost = ""
+    } else {
+        ClientHost = "http://localhost:9000"
+    }
+
     // Listen to the root path of the web app
-    http.HandleFunc("/session", WrapCors(CreateSessionHandler(&sessionController, &userMap)))
+    http.HandleFunc("/" + SessionPath, WrapCors(CreateSessionHandler(&sessionController, &userMap)))
 
     // Start a web server.
     http.ListenAndServe(":" + port, nil)
@@ -33,7 +45,7 @@ func main() {
 
 func WrapCors(h http.HandlerFunc) http.HandlerFunc {
     return func(writer http.ResponseWriter, request *http.Request) {
-        writer.Header().Add("Access-Control-Allow-Origin", "http://localhost:9000")
+        writer.Header().Add("Access-Control-Allow-Origin", ClientHost)
         writer.Header().Add("Access-Control-Allow-Credentials", "true")
         writer.Header().Add("Access-Control-Allow-Methods", "GET, PUT, DELETE")
         writer.Header().Add("Access-Control-Allow-Headers", "Content-Type")
@@ -124,9 +136,9 @@ func CreateSessionHandler(sessionController *SessionController, userMap *UserMap
 
 func ClearSessionID(writer http.ResponseWriter) {
     clearCookie := http.Cookie{
-        Name: "SESSION_ID",
+        Name: SessionIDCookieName,
         Value: "",
-        Path: "session",
+        Path: SessionPath,
         MaxAge: -1,
         HttpOnly: true,
         SameSite: http.SameSiteLaxMode,
@@ -136,9 +148,9 @@ func ClearSessionID(writer http.ResponseWriter) {
 
 func SetSessionID(writer http.ResponseWriter, idString string) {
     newCookie := http.Cookie{
-        Name: "SESSION_ID",
+        Name: SessionIDCookieName,
         Value: idString,
-        Path: "session",
+        Path: SessionPath,
         HttpOnly: true,
         SameSite: http.SameSiteLaxMode,
     }
