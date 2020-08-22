@@ -145,6 +145,7 @@ func ClearSessionID(writer http.ResponseWriter) {
         MaxAge: -1,
         HttpOnly: true,
         SameSite: http.SameSiteLaxMode,
+        Secure: true,
     }
     http.SetCookie(writer, &clearCookie)
 }
@@ -157,6 +158,7 @@ func SetSessionID(writer http.ResponseWriter, idString string) {
         MaxAge: 30 * 60, //30 minutes
         HttpOnly: true,
         SameSite: http.SameSiteLaxMode,
+        Secure: true,
     }
     http.SetCookie(writer, &newCookie)
 }
