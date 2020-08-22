@@ -142,9 +142,10 @@ func ClearSessionID(writer http.ResponseWriter) {
         Name: SessionIDCookieName,
         Value: "",
         Path: SessionPath,
+        Domain: "hiddenntu-potato-api.herokuapp.com",
         MaxAge: -1,
         HttpOnly: false,
-        SameSite: http.SameSiteLaxMode,
+        SameSite: http.SameSiteNoneMode,
         Secure: true,
     }
     http.SetCookie(writer, &clearCookie)
@@ -155,6 +156,7 @@ func SetSessionID(writer http.ResponseWriter, idString string) {
         Name: SessionIDCookieName,
         Value: idString,
         Path: SessionPath,
+        Domain: "hiddenntu-potato-api.herokuapp.com",
         MaxAge: 30 * 60, //30 minutes
         HttpOnly: false,
         SameSite: http.SameSiteNoneMode,
