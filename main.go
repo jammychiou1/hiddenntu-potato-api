@@ -8,7 +8,8 @@ import (
 )
 
 const (
-    SessionIDCookieName = "POTATO_SESSION_ID"
+    SessionIDHeaderName = "Potato-Session-Id"
+    ClearSessionIDHeaderName = "Clear-Potato-Session-Id"
     SessionPath = "session"
 )
 var ClientHost string
@@ -51,7 +52,8 @@ func WrapCors(h http.HandlerFunc) http.HandlerFunc {
         writer.Header().Add("Access-Control-Allow-Origin", ClientHost)
         writer.Header().Add("Access-Control-Allow-Credentials", "true")
         writer.Header().Add("Access-Control-Allow-Methods", "GET, PUT, DELETE")
-        writer.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+        writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, " + SessionIDHeaderName)
+        writer.Header().Add("Access-Control-Expose-Headers", SessionIDHeaderName)
         if request.Method == http.MethodOptions {
             writer.WriteHeader(http.StatusOK)
         } else {
@@ -64,13 +66,7 @@ func CreateSessionHandler(sessionController *SessionController, userMap *UserMap
     return func (writer http.ResponseWriter, request *http.Request) {
         fmt.Println(request.Method)
         if request.Method == http.MethodGet {
-            cookie, err := request.Cookie(SessionIDCookieName)
-            if err != nil {
-                fmt.Println(err)
-                writer.WriteHeader(http.StatusUnauthorized)
-                return
-            }
-            idString := cookie.Value
+            idString := request.Header.Get(SessionIDHeaderName)
             id, err := StringToId(idString)
             if err != nil {
                 fmt.Println(err)
@@ -115,13 +111,7 @@ func CreateSessionHandler(sessionController *SessionController, userMap *UserMap
             return
         }
         if request.Method == http.MethodDelete {
-            cookie, err := request.Cookie(SessionIDCookieName)
-            if err != nil {
-                fmt.Println(err)
-                writer.WriteHeader(http.StatusOK)
-                return
-            }
-            idString := cookie.Value
+            idString := request.Header.Get(SessionIDHeaderName)
             id, err := StringToId(idString)
             if err != nil {
                 fmt.Println(err)
@@ -138,30 +128,10 @@ func CreateSessionHandler(sessionController *SessionController, userMap *UserMap
 }
 
 func ClearSessionID(writer http.ResponseWriter) {
-    clearCookie := http.Cookie{
-        Name: SessionIDCookieName,
-        Value: "",
-        Path: SessionPath,
-        Domain: "hiddenntu-potato-api.herokuapp.com",
-        MaxAge: -1,
-        HttpOnly: false,
-        SameSite: http.SameSiteNoneMode,
-        Secure: true,
-    }
-    http.SetCookie(writer, &clearCookie)
+    writer.Header().Add(ClearSessionIDHeaderName, "true")
 }
 
 func SetSessionID(writer http.ResponseWriter, idString string) {
-    newCookie := http.Cookie{
-        Name: SessionIDCookieName,
-        Value: idString,
-        Path: SessionPath,
-        Domain: "hiddenntu-potato-api.herokuapp.com",
-        MaxAge: 30 * 60, //30 minutes
-        HttpOnly: false,
-        SameSite: http.SameSiteNoneMode,
-        Secure: true,
-    }
-    http.SetCookie(writer, &newCookie)
+    writer.Header().Add(SessionIDHeaderName, idString)
 }
 
