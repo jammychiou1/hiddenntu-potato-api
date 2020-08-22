@@ -8,7 +8,7 @@ import (
 )
 
 const (
-    SessionIDCookieName = "SESSION_ID"
+    SessionIDCookieName = "POTATO_SESSION_ID"
     SessionPath = "session"
 )
 var ClientHost string
@@ -64,7 +64,7 @@ func CreateSessionHandler(sessionController *SessionController, userMap *UserMap
     return func (writer http.ResponseWriter, request *http.Request) {
         fmt.Println(request.Method)
         if request.Method == http.MethodGet {
-            cookie, err := request.Cookie("SESSION_ID")
+            cookie, err := request.Cookie(SessionIDCookieName)
             if err != nil {
                 fmt.Println(err)
                 writer.WriteHeader(http.StatusUnauthorized)
@@ -115,7 +115,7 @@ func CreateSessionHandler(sessionController *SessionController, userMap *UserMap
             return
         }
         if request.Method == http.MethodDelete {
-            cookie, err := request.Cookie("SESSION_ID")
+            cookie, err := request.Cookie(SessionIDCookieName)
             if err != nil {
                 fmt.Println(err)
                 writer.WriteHeader(http.StatusOK)
