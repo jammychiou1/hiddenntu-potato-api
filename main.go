@@ -143,7 +143,7 @@ func ClearSessionID(writer http.ResponseWriter) {
         Value: "",
         Path: SessionPath,
         MaxAge: -1,
-        HttpOnly: true,
+        HttpOnly: false,
         SameSite: http.SameSiteLaxMode,
         Secure: true,
     }
@@ -156,7 +156,7 @@ func SetSessionID(writer http.ResponseWriter, idString string) {
         Value: idString,
         Path: SessionPath,
         MaxAge: 30 * 60, //30 minutes
-        HttpOnly: true,
+        HttpOnly: false,
         SameSite: http.SameSiteNoneMode,
         Secure: true,
     }
