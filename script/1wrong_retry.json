@@ -1,1 +1,10 @@
-{"lines": 1, "transitionMode": "QR", "cutscene": false, "nextBlock": ["2_library", "1wrong"], "key": "1_gamestart677913"}
+{
+    "lines": 1,
+    "transitionMode": "QR",
+    "cutscene": false,
+    "nextBlock": [
+        "2_library",
+        "1wrong"
+    ],
+    "key": "1_gamestart677913"
+}

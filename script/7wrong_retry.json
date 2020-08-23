@@ -1,1 +1,10 @@
-{"lines": 1, "transitionMode": "QR", "cutscene": false, "nextBlock": ["8_bell1", "7wrong"], "key": "7_bellstory534144"}
+{
+    "lines": 1,
+    "transitionMode": "QR",
+    "cutscene": false,
+    "nextBlock": [
+        "8_bell1",
+        "7wrong"
+    ],
+    "key": "7_bellstory534144"
+}

@@ -1,1 +1,10 @@
-{"lines": 1, "transitionMode": "QR", "cutscene": false, "nextBlock": ["20_lake2", "19QRwrong"], "key": "19QR574839"}
+{
+    "lines": 1,
+    "transitionMode": "QR",
+    "cutscene": false,
+    "nextBlock": [
+        "20_lake2",
+        "19QRwrong"
+    ],
+    "key": "19QR574839"
+}

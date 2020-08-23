@@ -1,1 +1,18 @@
-{"lines": 5, "cutscene": false, "nextBlock": ["16_split", "15wrong"], "transitionMode": "answer", "key": "FAKEPOTATO", "getItem": ["diary5"], "forceUI": {"itemMenu": true, "currentItem": "diary5"}}
+{
+    "lines": 5,
+    "cutscene": false,
+    "nextBlock": [
+        "16_split",
+        "15wrong"
+    ],
+    "transitionMode": "answer",
+    "key": "FAKEPOTATO",
+    "getItem": [
+        "diary5"
+    ],
+    "forceUI": {
+        "itemMenu": true,
+        "currentItem": "diary5",
+        "itemView": true
+    }
+}

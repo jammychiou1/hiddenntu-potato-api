@@ -1,1 +1,10 @@
-{"lines": 2, "transitionMode": "answer", "cutscene": false, "nextBlock": ["7_bellstory", "6wrong"], "key": "520"}
+{
+    "lines": 2,
+    "transitionMode": "answer",
+    "cutscene": false,
+    "nextBlock": [
+        "7_bellstory",
+        "6wrong"
+    ],
+    "key": "520"
+}

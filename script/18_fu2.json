@@ -1,1 +1,9 @@
-{"lines": 1, "cutscene": false, "nextBlock": "18question", "transitionMode": "next", "forceUI": {"QR": false}}
+{
+    "lines": 1,
+    "cutscene": false,
+    "nextBlock": "18question",
+    "transitionMode": "next",
+    "forceUI": {
+        "QR": false
+    }
+}

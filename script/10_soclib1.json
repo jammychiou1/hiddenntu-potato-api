@@ -1,1 +1,6 @@
-{"lines": 4, "cutscene": false, "nextBlock": "11_soclib2", "transitionMode": "next"}
+{
+    "lines": 4,
+    "cutscene": false,
+    "nextBlock": "11_soclib2",
+    "transitionMode": "next"
+}

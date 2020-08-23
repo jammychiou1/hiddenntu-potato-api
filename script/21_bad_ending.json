@@ -1,1 +1,6 @@
-{"lines": 9, "cutscene": false, "nextBlock": "go_back", "transitionMode": "next"}
+{
+    "lines": 9,
+    "cutscene": false,
+    "nextBlock": "go_back",
+    "transitionMode": "next"
+}

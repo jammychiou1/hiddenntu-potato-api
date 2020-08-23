@@ -1,1 +1,13 @@
-{"lines": 39, "cutscene": false, "nextBlock": ["17_fu1", "19_lake1"], "transitionMode": "decision", "decisions": ["不論如何先到小福，再想辦法和河馬王周旋", "妹妹的約定……去醉月湖看看吧……"]}
+{
+    "lines": 39,
+    "cutscene": false,
+    "nextBlock": [
+        "17_fu1",
+        "19_lake1"
+    ],
+    "transitionMode": "decision",
+    "decisions": [
+        "\u4e0d\u8ad6\u5982\u4f55\u5148\u5230\u5c0f\u798f\uff0c\u518d\u60f3\u8fa6\u6cd5\u548c\u6cb3\u99ac\u738b\u5468\u65cb",
+        "\u59b9\u59b9\u7684\u7d04\u5b9a\u2026\u2026\u53bb\u9189\u6708\u6e56\u770b\u770b\u5427\u2026\u2026"
+    ]
+}

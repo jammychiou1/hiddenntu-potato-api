@@ -1,1 +1,10 @@
-{"lines": 2, "transitionMode": "answer", "cutscene": false, "nextBlock": ["10_soclib1", "9wrong"], "key": "1657"}
+{
+    "lines": 2,
+    "transitionMode": "answer",
+    "cutscene": false,
+    "nextBlock": [
+        "10_soclib1",
+        "9wrong"
+    ],
+    "key": "1657"
+}

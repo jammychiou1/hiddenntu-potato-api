@@ -1,1 +1,18 @@
-{"lines": 4, "cutscene": false, "nextBlock": ["5_art", "4wrong"], "transitionMode": "answer", "key": "214", "getItem": ["diary1"], "forceUI": {"itemMenu": true, "currentItem": "diary1"}}
+{
+    "lines": 4,
+    "cutscene": false,
+    "nextBlock": [
+        "5_art",
+        "4wrong"
+    ],
+    "transitionMode": "answer",
+    "key": "214",
+    "getItem": [
+        "diary1"
+    ],
+    "forceUI": {
+        "itemMenu": true,
+        "currentItem": "diary1",
+        "itemView": true
+    }
+}

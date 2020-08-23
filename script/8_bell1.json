@@ -1,1 +1,9 @@
-{"lines": 1, "cutscene": false, "nextBlock": "9_bell2", "transitionMode": "next", "forceUI": {"QR": false}}
+{
+    "lines": 1,
+    "cutscene": false,
+    "nextBlock": "9_bell2",
+    "transitionMode": "next",
+    "forceUI": {
+        "QR": false
+    }
+}

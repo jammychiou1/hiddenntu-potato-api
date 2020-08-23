@@ -1,1 +1,19 @@
-{"lines": 1, "cutscene": false, "nextBlock": ["21_bad_ending", "18Questionwrong"], "transitionMode": "answer", "key": "ILOVEYOU", "getItem": ["fu_paper", "fu_question"], "forceUI": {"itemMenu": true, "currentItem": "fu_paper"}}
+{
+    "lines": 1,
+    "cutscene": false,
+    "nextBlock": [
+        "21_bad_ending",
+        "18Questionwrong"
+    ],
+    "transitionMode": "answer",
+    "key": "ILOVEYOU",
+    "getItem": [
+        "fu_paper",
+        "fu_question"
+    ],
+    "forceUI": {
+        "itemMenu": true,
+        "currentItem": "fu_paper",
+        "itemView": true
+    }
+}

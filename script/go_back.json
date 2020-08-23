@@ -1,1 +1,11 @@
-{"lines": 2, "cutscene": false, "nextBlock": ["16_split"], "transitionMode": "decision", "decisions": ["回到分歧點"]}
+{
+    "lines": 2,
+    "cutscene": false,
+    "nextBlock": [
+        "16_split"
+    ],
+    "transitionMode": "decision",
+    "decisions": [
+        "\u56de\u5230\u5206\u6b67\u9ede"
+    ]
+}

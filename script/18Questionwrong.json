@@ -1,1 +1,10 @@
-{"lines": 2, "transitionMode": "answer", "cutscene": false, "nextBlock": ["21_bad_ending", "18Questionwrong"], "key": "ILOVEYOU"}
+{
+    "lines": 2,
+    "transitionMode": "answer",
+    "cutscene": false,
+    "nextBlock": [
+        "21_bad_ending",
+        "18Questionwrong"
+    ],
+    "key": "ILOVEYOU"
+}

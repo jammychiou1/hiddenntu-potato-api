@@ -1,1 +1,10 @@
-{"lines": 1, "transitionMode": "QR", "cutscene": false, "nextBlock": ["11question", "11QRwrong"], "key": "11_soclib2727126"}
+{
+    "lines": 1,
+    "transitionMode": "QR",
+    "cutscene": false,
+    "nextBlock": [
+        "11question",
+        "11QRwrong"
+    ],
+    "key": "11_soclib2727126"
+}

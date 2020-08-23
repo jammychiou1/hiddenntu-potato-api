@@ -1,1 +1,10 @@
-{"lines": 1, "transitionMode": "QR", "cutscene": false, "nextBlock": ["18_fu2", "17wrong"], "key": "17_fu1783239"}
+{
+    "lines": 1,
+    "transitionMode": "QR",
+    "cutscene": false,
+    "nextBlock": [
+        "18_fu2",
+        "17wrong"
+    ],
+    "key": "17_fu1783239"
+}

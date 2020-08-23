@@ -1,1 +1,10 @@
-{"lines": 2, "transitionMode": "answer", "cutscene": false, "nextBlock": ["3_ee2", "2wrong"], "key": "124"}
+{
+    "lines": 2,
+    "transitionMode": "answer",
+    "cutscene": false,
+    "nextBlock": [
+        "3_ee2",
+        "2wrong"
+    ],
+    "key": "124"
+}
