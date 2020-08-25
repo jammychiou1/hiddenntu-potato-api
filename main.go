@@ -4,20 +4,27 @@ import (
     "fmt"
     "os"
     "net/http"
-    "encoding/json"
 )
 
 const (
     SessionIDHeaderName = "Potato-Session-Id"
     ClearSessionIDHeaderName = "Clear-Potato-Session-Id"
+    ScriptDirectory = "script"
     SessionPath = "session"
+    GamePath = "game"
+    NextPath = "next"
+    QRPath = "QR"
+    AnswerPath = "answer"
 )
 var ClientHost string
 
 func main() {
     userMap := UserMap{
-        Data: map[string]User{
-            "dao1": User{},
+        Data: map[string]*User{
+            "dao1": &User{
+                Progress: []ScenePosition{{"1_gamestart", 0}},
+                ItemList: []string{},
+            },
         },
     }
 
@@ -39,7 +46,8 @@ func main() {
     fmt.Println("expecting request from " + ClientHost)
 
     // Listen to the root path of the web app
-    http.HandleFunc("/" + SessionPath, WrapCors(CreateSessionHandler(&sessionController, &userMap)))
+    RegisterSessionHandlers(&sessionController, &userMap)
+    RegisterGameHandlers(&sessionController, &userMap)
 
     fmt.Println("listening on port " + port)
 
@@ -49,6 +57,7 @@ func main() {
 
 func WrapCors(h http.HandlerFunc) http.HandlerFunc {
     return func(writer http.ResponseWriter, request *http.Request) {
+        fmt.Println(request.Method)
         writer.Header().Add("Access-Control-Allow-Origin", ClientHost)
         writer.Header().Add("Access-Control-Allow-Credentials", "true")
         writer.Header().Add("Access-Control-Allow-Methods", "GET, PUT, DELETE")
@@ -60,78 +69,5 @@ func WrapCors(h http.HandlerFunc) http.HandlerFunc {
             h(writer, request)
         }
     }
-}
-
-func CreateSessionHandler(sessionController *SessionController, userMap *UserMap) http.HandlerFunc {
-    return func (writer http.ResponseWriter, request *http.Request) {
-        fmt.Println(request.Method)
-        if request.Method == http.MethodGet {
-            idString := request.Header.Get(SessionIDHeaderName)
-            id, err := StringToId(idString)
-            if err != nil {
-                fmt.Println(err)
-                ClearSessionID(writer)
-                writer.WriteHeader(http.StatusUnauthorized)
-                return
-            }
-            userData, ok := sessionController.GetSessionUserData(id)
-            if !ok {
-                ClearSessionID(writer)
-                writer.WriteHeader(http.StatusUnauthorized)
-                return
-            }
-            SetSessionID(writer, idString)
-            writer.Header().Add("Content-Type", "application/json")
-            writer.WriteHeader(http.StatusOK)
-            json.NewEncoder(writer).Encode(userData)
-            return
-        }
-        if request.Method == http.MethodPut {
-            if request.Header.Get("Content-Type") != "application/json" {
-                writer.WriteHeader(http.StatusBadRequest)
-                return
-            }
-            userCredentials, err := DecodeUserCredentials(request.Body)
-            if err != nil {
-                fmt.Println(err)
-                writer.WriteHeader(http.StatusBadRequest)
-                return
-            }
-            username, ok := userMap.AuthorizeUser(userCredentials)
-            if !ok {
-                writer.WriteHeader(http.StatusUnauthorized)
-                return
-            }
-            id, userData := sessionController.NewSession(username)
-            idString := IdToString(id)
-            SetSessionID(writer, idString)
-            writer.Header().Add("Content-Type", "application/json")
-            writer.WriteHeader(http.StatusOK)
-            json.NewEncoder(writer).Encode(userData)
-            return
-        }
-        if request.Method == http.MethodDelete {
-            idString := request.Header.Get(SessionIDHeaderName)
-            id, err := StringToId(idString)
-            if err != nil {
-                fmt.Println(err)
-                writer.WriteHeader(http.StatusOK)
-                return
-            }
-            sessionController.DeleteSession(id)
-            ClearSessionID(writer)
-            writer.WriteHeader(http.StatusOK)
-            return
-        }
-        writer.WriteHeader(http.StatusBadRequest)
-    }
-}
-
-func ClearSessionID(writer http.ResponseWriter) {
-    writer.Header().Add(ClearSessionIDHeaderName, "true")
-}
-
-func SetSessionID(writer http.ResponseWriter, idString string) {
-    writer.Header().Add(SessionIDHeaderName, idString)
 }
 

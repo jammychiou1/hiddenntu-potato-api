@@ -3,7 +3,7 @@ package main
 import (
     "sync"
     "encoding/json"
-    "io"
+    "net/http"
 )
 
 type ScenePosition struct {
@@ -11,7 +11,6 @@ type ScenePosition struct {
     Position int
 }
 type UI struct {
-    Mode string
     QR bool
     ItemMenu bool
     ItemView bool
@@ -19,13 +18,14 @@ type UI struct {
     CurrentItem string
 }
 type User struct {
+    Lock sync.RWMutex
     Progress []ScenePosition
     ItemList []string
     UI UI
 }
 type UserMap struct {
     Lock sync.RWMutex
-    Data map[string]User
+    Data map[string]*User
 }
 type UserCredentials struct {
     Username string `json:"username"`
@@ -33,18 +33,19 @@ type UserCredentials struct {
 type UserData struct {
     Username string `json:"username"`
 }
-func DecodeUserCredentials(body io.Reader) (UserCredentials, error) {
+func DecodeUserCredentials(request *http.Request) (UserCredentials, error) {
     result := UserCredentials{}
-    err := json.NewDecoder(body).Decode(&result)
+    err := json.NewDecoder(request.Body).Decode(&result)
     return result, err
 }
 func (um *UserMap) AuthorizeUser(userCredentials UserCredentials) (string, bool) {
     um.Lock.RLock()
     _, ok := um.Data[userCredentials.Username]
-    um.Lock.RUnlock()
     username := ""
     if ok {
         username = userCredentials.Username
     }
+    um.Lock.RUnlock()
     return username, ok
 }
+

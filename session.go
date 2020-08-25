@@ -2,9 +2,11 @@ package main
 
 import (
     "fmt"
+    "net/http"
     "sync"
     "time"
     "encoding/base64"
+    "encoding/json"
     "crypto/rand"
 )
 const (
@@ -13,7 +15,7 @@ const (
 )
 type SessionID [256]byte
 type Session struct {
-    UserData UserData
+    Username string
     Timer *time.Timer
 }
 type SessionController struct {
@@ -21,21 +23,21 @@ type SessionController struct {
     SessionMap map[SessionID]Session
 }
 
-func (sc *SessionController) GetSessionUserData(id SessionID) (UserData, bool) {
+func (sc *SessionController) GetSessionUsername(id SessionID) (string, bool) {
     sc.Lock.RLock()
     session, ok := sc.SessionMap[id]
-    userData := UserData{}
+    username := ""
     if ok {
         //potential data race: timer tries to delete session but before acquiring the write lock, the timer is reset
         session.Timer.Stop()
         session.Timer.Reset(SessionMaxAge)
-        userData = session.UserData
+        username = session.Username
     }
     sc.Lock.RUnlock()
-    return userData, ok
+    return username, ok
 }
 
-func (sc *SessionController) NewSession(username string) (SessionID, UserData) {
+func (sc *SessionController) NewSession(username string) SessionID {
     var id SessionID
     sc.Lock.Lock()
     for {
@@ -46,19 +48,18 @@ func (sc *SessionController) NewSession(username string) (SessionID, UserData) {
         }
     }
     fmt.Println("Session created")
-    userData := UserData{username}
     sc.SessionMap[id] = Session{
-        userData,
+        username,
         time.AfterFunc(SessionMaxAge, func() {
             fmt.Println("Session timed out")
             sc.DeleteSession(id)
         }),
     }
     sc.Lock.Unlock()
-    return id, userData
+    return id
 }
 
-func (sc *SessionController) DeleteSession(id SessionID) {
+func (sc *SessionController) DeleteSession(id SessionID) bool {
     sc.Lock.Lock()
     session, ok := sc.SessionMap[id]
     if ok {
@@ -66,6 +67,7 @@ func (sc *SessionController) DeleteSession(id SessionID) {
         delete(sc.SessionMap, id)
     }
     sc.Lock.Unlock()
+    return ok
 }
 func StringToId(idString string) (SessionID, error) {
     id := SessionID{}
@@ -74,11 +76,102 @@ func StringToId(idString string) (SessionID, error) {
         return id, err
     }
     if len(idSlice) != 256 {
-        return id, fmt.Errorf("Incorrect length")
+        return id, fmt.Errorf("Incorrect length %d", len(idSlice))
     }
     copy(id[:], idSlice)
     return id, nil
 }
 func IdToString(id SessionID) string {
     return base64.URLEncoding.EncodeToString(id[:])
+}
+
+func GetLoginUsername(sessionController *SessionController, request *http.Request) (string, bool) {
+    idString := request.Header.Get(SessionIDHeaderName)
+    id, err := StringToId(idString)
+    if err != nil {
+        fmt.Println(err)
+        return "", false
+    }
+    username, ok := sessionController.GetSessionUsername(id)
+    if !ok {
+        return "", false
+    }
+    return username, ok
+}
+
+func CheckLogin(sessionController *SessionController, writer http.ResponseWriter, request *http.Request) (string, bool) {
+    username, ok := GetLoginUsername(sessionController, request)
+    if !ok {
+        writer.WriteHeader(http.StatusUnauthorized)
+        return "", false
+    }
+    return username, true
+}
+func CreateSessionHandler(sessionController *SessionController, userMap *UserMap) http.HandlerFunc {
+    return func (writer http.ResponseWriter, request *http.Request) {
+        if request.Method == http.MethodGet {
+            username, ok := CheckLogin(sessionController, writer, request)
+            if !ok {
+                return
+            }
+            writer.Header().Add("Content-Type", "application/json")
+            writer.WriteHeader(http.StatusOK)
+            userData := UserData{username}
+            json.NewEncoder(writer).Encode(userData)
+            return
+        }
+        if request.Method == http.MethodPost {
+            if request.Header.Get("Content-Type") != "application/json" {
+                writer.WriteHeader(http.StatusBadRequest)
+                return
+            }
+            userCredentials, err := DecodeUserCredentials(request)
+            if err != nil {
+                fmt.Println(err)
+                writer.WriteHeader(http.StatusBadRequest)
+                return
+            }
+            username, ok := userMap.AuthorizeUser(userCredentials)
+            if !ok {
+                writer.WriteHeader(http.StatusUnauthorized)
+                return
+            }
+            id := sessionController.NewSession(username)
+            idString := IdToString(id)
+            SetSessionID(writer, idString)
+            writer.Header().Add("Content-Type", "application/json")
+            writer.WriteHeader(http.StatusCreated)
+            userData := UserData{username}
+            json.NewEncoder(writer).Encode(userData)
+            return
+        }
+        if request.Method == http.MethodDelete {
+            idString := request.Header.Get(SessionIDHeaderName)
+            id, err := StringToId(idString)
+            if err != nil {
+                fmt.Println(err)
+                writer.WriteHeader(http.StatusNotFound)
+                return
+            }
+            if !sessionController.DeleteSession(id) {
+                writer.WriteHeader(http.StatusNotFound)
+                return
+            }
+            writer.WriteHeader(http.StatusNoContent)
+            return
+        }
+        writer.WriteHeader(http.StatusBadRequest)
+    }
+}
+
+func ClearSessionID(writer http.ResponseWriter) {
+    writer.Header().Add(ClearSessionIDHeaderName, "true")
+}
+
+func SetSessionID(writer http.ResponseWriter, idString string) {
+    writer.Header().Add(SessionIDHeaderName, idString)
+}
+
+func RegisterSessionHandlers(sessionController *SessionController, userMap *UserMap) {
+    http.HandleFunc("/" + SessionPath, WrapCors(CreateSessionHandler(sessionController, userMap)))
 }
