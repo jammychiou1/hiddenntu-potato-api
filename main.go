@@ -10,6 +10,8 @@ const (
     SessionIDHeaderName = "Potato-Session-Id"
     ClearSessionIDHeaderName = "Clear-Potato-Session-Id"
     ScriptDirectory = "script"
+    ItemDirectory = "item"
+    ItemConfigFileName = "items.json"
     SessionPath = "session"
     GamePath = "game"
     NextPath = "next"

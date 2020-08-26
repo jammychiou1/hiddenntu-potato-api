@@ -1,0 +1,50 @@
+{
+    "diary4": {
+        "title": "\u59b9\u59b9\u7684\u65e5\u8a18-4",
+        "asset": ["ubike.png"]
+    },
+    "bell": {
+        "title": "\u6cb3\u5317\u99ac\u9234\u85af\u738b\u7559\u4e0b\u7684\u4fe1",
+        "asset": []
+    },
+    "diary7": {
+        "title": "\u59b9\u59b9\u7684\u65e5\u8a18-7",
+        "asset": []
+    },
+    "document": {
+        "title": "\u6587\u4ef6",
+        "asset": []
+    },
+    "diary1": {
+        "title": "\u59b9\u59b9\u7684\u65e5\u8a18-1",
+        "asset": ["ee2.png"]
+    },
+    "diary2": {
+        "title": "\u59b9\u59b9\u7684\u65e5\u8a18-2",
+        "asset": ["art.png"]
+    },
+    "fu_question": {
+        "title": "\u6700\u5f8c\u7684\u8b0e\u984c",
+        "asset": []
+    },
+    "diary6": {
+        "title": "\u59b9\u59b9\u7684\u65e5\u8a18-6",
+        "asset": ["lake.png"]
+    },
+    "fu_paper": {
+        "title": "\u7d19\u689d",
+        "asset": []
+    },
+    "diary3": {
+        "title": "\u59b9\u59b9\u7684\u65e5\u8a18-3",
+        "asset": []
+    },
+    "tree": {
+        "title": "\u5730\u5716",
+        "asset": ["soclib.png"]
+    },
+    "diary5": {
+        "title": "\u59b9\u59b9\u7684\u65e5\u8a18-5",
+        "asset": ["basketball.png"]
+    }
+}

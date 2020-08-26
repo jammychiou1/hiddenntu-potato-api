@@ -65,8 +65,6 @@ func ReadSceneQuote(sceneName string, index int) (Quote, error) {
     }
     return Quote{allQuotes[index][0], allQuotes[index][1]}, nil
 }
-func applyForceUI(UI *UI, forceUI map[string]interface{}) {
-}
 func GetCurrentUser(username string, userMap *UserMap, writer http.ResponseWriter, request *http.Request) (*User, bool) {
     userMap.Lock.RLock()
     user, ok := userMap.Data[username]
@@ -378,4 +376,5 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
     http.HandleFunc("/" + GamePath + "/" + QRPath, WrapCors(gameQRHandler))
     http.HandleFunc("/" + GamePath + "/" + AnswerPath, WrapCors(gameAnswerHandler))
     http.HandleFunc("/" + GamePath + "/" + UIPath, WrapCors(gameUIHandler))
+    RegisterGameItemHandler(sessionController, userMap)
 }
