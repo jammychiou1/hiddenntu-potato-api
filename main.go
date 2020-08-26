@@ -61,6 +61,7 @@ func main() {
 func WrapCors(h http.HandlerFunc) http.HandlerFunc {
     return func(writer http.ResponseWriter, request *http.Request) {
         fmt.Println(request.Method)
+        fmt.Println(request.URL)
         writer.Header().Add("Access-Control-Allow-Origin", ClientHost)
         writer.Header().Add("Access-Control-Allow-Credentials", "true")
         writer.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
