@@ -15,6 +15,7 @@ const (
     NextPath = "next"
     QRPath = "QR"
     AnswerPath = "answer"
+    UIPath = "UI"
 )
 var ClientHost string
 
@@ -60,7 +61,7 @@ func WrapCors(h http.HandlerFunc) http.HandlerFunc {
         fmt.Println(request.Method)
         writer.Header().Add("Access-Control-Allow-Origin", ClientHost)
         writer.Header().Add("Access-Control-Allow-Credentials", "true")
-        writer.Header().Add("Access-Control-Allow-Methods", "GET, PUT, DELETE")
+        writer.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
         writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, " + SessionIDHeaderName)
         writer.Header().Add("Access-Control-Expose-Headers", SessionIDHeaderName)
         if request.Method == http.MethodOptions {

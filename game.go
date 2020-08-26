@@ -227,7 +227,11 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
         if currentPosition.Position == sceneData.NumLines - 1 {
             if sceneData.TransitionMode == "QR" {
                 nextBlock := ""
-                if sceneData.Key == requestObj["key"].(string) {
+                key, ok := requestObj["key"].(string)
+                if !ok {
+                    return false, nil
+                }
+                if sceneData.Key == key {
                     nextBlock = sceneData.NextBlock.([]string)[0]
                 } else {
                     nextBlock = sceneData.NextBlock.([]string)[1]
@@ -253,7 +257,11 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
         if currentPosition.Position == sceneData.NumLines - 1 {
             if sceneData.TransitionMode == "answer" {
                 nextBlock := ""
-                if sceneData.Key == requestObj["key"].(string) {
+                key, ok := requestObj["key"].(string)
+                if !ok {
+                    return false, nil
+                }
+                if sceneData.Key == key {
                     nextBlock = sceneData.NextBlock.([]string)[0]
                 } else {
                     nextBlock = sceneData.NextBlock.([]string)[1]
@@ -270,12 +278,104 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
         }
         return true, nil
     }
+    gameUIUpdateFunc := func (user *User, requestObj map[string]interface{}) (bool, error) {
+        fmt.Println(requestObj)
+        target, ok := requestObj["target"].(string)
+        if !ok {
+            return false, nil
+        }
+        if target == "currentItem" {
+            item, ok := requestObj["item"].(string)
+            if ok {
+                hasItem := false
+                for _, a := range user.ItemList {
+                    if item == a {
+                        hasItem = true
+                        break
+                    }
+                }
+                if !hasItem {
+                    return false, nil
+                }
+                user.UI.CurrentItem = item
+                return true, nil
+            }
+            return false, nil
+        }
+        if target == "QR" || target == "itemMenu" || target == "itemView" || target == "history" {
+            flag, ok := requestObj["flag"].(bool)
+            if !ok {
+                return false, nil
+            }
+            if target == "QR" {
+                if flag {
+                    if user.UI.QR || user.UI.ItemMenu || user.UI.History {
+                        return false, nil
+                    }
+                    user.UI.QR = true
+                    return true, nil
+                } else {
+                    if !user.UI.QR {
+                        return false, nil
+                    }
+                    user.UI.QR = false
+                    return true, nil
+                }
+            }
+            if target == "itemMenu" {
+                if flag {
+                    if user.UI.QR || user.UI.ItemMenu || user.UI.History {
+                        return false, nil
+                    }
+                    user.UI.ItemMenu = true
+                    return true, nil
+                } else {
+                    if !(user.UI.ItemMenu && !user.UI.ItemView) {
+                        return false, nil
+                    }
+                    user.UI.ItemMenu = false
+                    return true, nil
+                }
+            }
+            if target == "itemView" {
+                if flag {
+                    if !user.UI.ItemMenu {
+                        return false, nil
+                    }
+                    user.UI.ItemView = true
+                } else {
+                    if !user.UI.ItemView {
+                        return false, nil
+                    }
+                    user.UI.ItemView = false
+                }
+            }
+            if target == "history" {
+                if flag {
+                    if user.UI.QR || user.UI.ItemMenu || user.UI.History {
+                        return false, nil
+                    }
+                    user.UI.History = true
+                    return true, nil
+                } else {
+                    if !user.UI.History {
+                        return false, nil
+                    }
+                    user.UI.History = false
+                    return true, nil
+                }
+            }
+        }
+        return false, nil
+    }
     gameHandler := CreateGameHandler(gameUpdateFunc , http.MethodGet, false, sessionController, userMap)
     gameNextHandler := CreateGameHandler(gameNextUpdateFunc, http.MethodPost, false, sessionController, userMap)
     gameQRHandler := CreateGameHandler(gameQRUpdateFunc, http.MethodPost, true, sessionController, userMap)
     gameAnswerHandler := CreateGameHandler(gameAnswerUpdateFunc, http.MethodPost, true, sessionController, userMap)
+    gameUIHandler := CreateGameHandler(gameUIUpdateFunc, http.MethodPost, true, sessionController, userMap)
     http.HandleFunc("/" + GamePath, WrapCors(gameHandler))
     http.HandleFunc("/" + GamePath + "/" + NextPath, WrapCors(gameNextHandler))
     http.HandleFunc("/" + GamePath + "/" + QRPath, WrapCors(gameQRHandler))
     http.HandleFunc("/" + GamePath + "/" + AnswerPath, WrapCors(gameAnswerHandler))
+    http.HandleFunc("/" + GamePath + "/" + UIPath, WrapCors(gameUIHandler))
 }

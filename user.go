@@ -11,11 +11,11 @@ type ScenePosition struct {
     Position int
 }
 type UI struct {
-    QR bool
-    ItemMenu bool
-    ItemView bool
-    History bool
-    CurrentItem string
+    QR bool `json:"QR"`
+    ItemMenu bool `json:"itemMenu"`
+    ItemView bool `json:"itemView"`
+    History bool `json:"history"`
+    CurrentItem string `json:"currentItem"`
 }
 type User struct {
     Lock sync.RWMutex
