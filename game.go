@@ -230,9 +230,9 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
                     return false, nil
                 }
                 if sceneData.Key == key {
-                    nextBlock = sceneData.NextBlock.([]string)[0]
+                    nextBlock = sceneData.NextBlock.([]interface{})[0].(string)
                 } else {
-                    nextBlock = sceneData.NextBlock.([]string)[1]
+                    nextBlock = sceneData.NextBlock.([]interface{})[1].(string)
                 }
                 err = ToNextScene(user, nextBlock)
                 if err != nil {
@@ -260,9 +260,9 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
                     return false, nil
                 }
                 if sceneData.Key == key {
-                    nextBlock = sceneData.NextBlock.([]string)[0]
+                    nextBlock = sceneData.NextBlock.([]interface{})[0].(string)
                 } else {
-                    nextBlock = sceneData.NextBlock.([]string)[1]
+                    nextBlock = sceneData.NextBlock.([]interface{})[1].(string)
                 }
                 err = ToNextScene(user, nextBlock)
                 if err != nil {
