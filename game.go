@@ -159,11 +159,17 @@ func gameDecisionUpdateFunc(user *User, requestObj map[string]interface{}) (bool
     fmt.Println(requestObj)
     if currentPosition.Position == sceneData.NumLines - 1 {
         if sceneData.TransitionMode == "decision" {
-            id, ok := requestObj["id"].(int)
-            fmt.Println(id, ok)
+            idInterface, ok := requestObj["id"]
+            fmt.Println(idInterface, ok)
             if !ok {
                 return false, nil
             }
+            fmt.Printf("%T\n", idInterface)
+            id, ok := idInterface.(int)
+            if !ok {
+                return false, nil
+            }
+            fmt.Println(idInterface, ok)
             nextBlockList, ok := sceneData.NextBlock.([]interface{})
             if !ok {
                 return false, fmt.Errorf("scene config next block wrong format")
@@ -330,7 +336,11 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
         if currentPosition.Position == sceneData.NumLines - 1 {
             if sceneData.TransitionMode == "QR" {
                 nextBlock := ""
-                key, ok := requestObj["key"].(string)
+                keyInterface, ok := requestObj["key"]
+                if !ok {
+                    return false, nil
+                }
+                key, ok := keyInterface.(string)
                 if !ok {
                     return false, nil
                 }
@@ -360,7 +370,11 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
         if currentPosition.Position == sceneData.NumLines - 1 {
             if sceneData.TransitionMode == "answer" {
                 nextBlock := ""
-                key, ok := requestObj["answer"].(string)
+                keyInterface, ok := requestObj["key"]
+                if !ok {
+                    return false, nil
+                }
+                key, ok := keyInterface.(string)
                 if !ok {
                     return false, nil
                 }
@@ -383,30 +397,42 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
     }
     gameUIUpdateFunc := func (user *User, requestObj map[string]interface{}) (bool, error) {
         fmt.Println(requestObj)
-        target, ok := requestObj["target"].(string)
+        targetInterface, ok := requestObj["target"]
+        if !ok {
+            return false, nil
+        }
+        target, ok := targetInterface.(string)
         if !ok {
             return false, nil
         }
         if target == "currentItem" {
-            item, ok := requestObj["item"].(string)
-            if ok {
-                hasItem := false
-                for _, a := range user.ItemList {
-                    if item == a {
-                        hasItem = true
-                        break
-                    }
-                }
-                if !hasItem {
-                    return false, nil
-                }
-                user.UI.CurrentItem = item
-                return true, nil
+            itemInterface, ok := requestObj["item"]
+            if !ok {
+                return false, nil
             }
-            return false, nil
+            item, ok := itemInterface.(string)
+            if !ok {
+                return false, nil
+            }
+            hasItem := false
+            for _, a := range user.ItemList {
+                if item == a {
+                    hasItem = true
+                    break
+                }
+            }
+            if !hasItem {
+                return false, nil
+            }
+            user.UI.CurrentItem = item
+            return true, nil
         }
         if target == "QR" || target == "itemMenu" || target == "itemView" || target == "history" {
-            flag, ok := requestObj["flag"].(bool)
+            flagInterface, ok := requestObj["flag"]
+            if !ok {
+                return false, nil
+            }
+            flag, ok := flagInterface.(bool)
             if !ok {
                 return false, nil
             }
