@@ -14,6 +14,7 @@ type SceneData struct {
     Cutscene bool `json:"cutscene"`
     Key string `json:"key"`
     GetItem []string `json:"getItem"`
+    Decisions []string `json:"decisions"`
     NextBlock interface{} `json:"nextBlock"`
     ForceUI map[string]interface{} `json:"forceUI"`
 }
@@ -149,53 +150,154 @@ func CreateGameHandler(updateFunc func (*User, map[string]interface{}) (bool, er
         writer.WriteHeader(http.StatusBadRequest)
     }
 }
+func gameQRUpdateFunc(user *User, requestObj map[string]interface{}) (bool, error) {
+    currentPosition := user.Progress[len(user.Progress) - 1]
+    sceneData, err := ReadScene(currentPosition.Scene)
+    if err != nil {
+        return false, err
+    }
+    if currentPosition.Position == sceneData.NumLines - 1 {
+        if sceneData.TransitionMode == "decision" {
+            id, ok := requestObj["id"].(int)
+            if !ok {
+                return false, nil
+            }
+            nextBlockList, ok := sceneData.NextBlock.([]interface{})
+            if !ok {
+                return false, fmt.Errorf("scene config next block wrong format")
+            }
+            if id < 0 || id >= len(nextBlockList) {
+                return false, nil
+            }
+            nextBlock := nextBlockList[id].(string)
+            err = ToNextScene(user, nextBlock)
+            if err != nil {
+                return false, err
+            }
+        } else {
+            return false, nil
+        }
+    } else {
+        return false, nil
+    }
+    return true, nil
+}
+func CreateGameDecisionHandler(sessionController *SessionController, userMap *UserMap) http.HandlerFunc {
+    return func (writer http.ResponseWriter, request *http.Request) {
+        if request.Method == http.MethodPost {
+            username, ok := CheckLogin(sessionController, writer, request)
+            if !ok {
+                return
+            }
+            user, ok := GetCurrentUser(username, userMap, writer, request)
+            if !ok {
+                return
+            }
+            requestObj := map[string]interface{}{}
+            if request.Header.Get("Content-Type") != "application/json" {
+                writer.WriteHeader(http.StatusBadRequest)
+                return
+            }
+            err := json.NewDecoder(request.Body).Decode(&requestObj)
+            if err != nil {
+                writer.WriteHeader(http.StatusBadRequest)
+                return
+            }
+            user.Lock.Lock()
+            ok, err = gameQRUpdateFunc(user, requestObj)
+            if err != nil {
+                writer.WriteHeader(http.StatusInternalServerError)
+                user.Lock.Unlock()
+                return
+            }
+            if !ok {
+                writer.WriteHeader(http.StatusBadRequest)
+                user.Lock.Unlock()
+                return
+            }
+            WriteClientStatus(user, writer)
+            user.Lock.Unlock()
+            return
+        }
+        if request.Method == http.MethodGet {
+            username, ok := CheckLogin(sessionController, writer, request)
+            if !ok {
+                return
+            }
+            user, ok := GetCurrentUser(username, userMap, writer, request)
+            if !ok {
+                return
+            }
+            user.Lock.Lock()
+            currentPosition := user.Progress[len(user.Progress) - 1]
+            sceneData, err := ReadScene(currentPosition.Scene)
+            if err != nil {
+                writer.WriteHeader(http.StatusInternalServerError)
+                user.Lock.Unlock()
+                return
+            }
+            user.Lock.Unlock()
+            if currentPosition.Position == sceneData.NumLines - 1 {
+                if sceneData.TransitionMode == "decision" {
+                    writer.Header().Add("Content-Type", "application/json")
+                    writer.WriteHeader(http.StatusOK)
+                    json.NewEncoder(writer).Encode(sceneData.Decisions)
+                    return
+                }
+            }
+            writer.WriteHeader(http.StatusBadRequest)
+            return
+        }
+        writer.WriteHeader(http.StatusBadRequest)
+    }
+}
+func ToNextScene(user *User, nextBlock string) error {
+    user.Progress = append(user.Progress, ScenePosition{nextBlock, 0})
+    sceneData, err := ReadScene(nextBlock)
+    if err != nil {
+        return err
+    }
+    if sceneData.ForceUI != nil {
+        QR, ok := sceneData.ForceUI["QR"]
+        if ok {
+            user.UI.QR = QR.(bool)
+        }
+        itemMenu, ok := sceneData.ForceUI["itemMenu"]
+        if ok {
+            user.UI.ItemMenu = itemMenu.(bool)
+        }
+        itemView, ok := sceneData.ForceUI["itemView"]
+        if ok {
+            user.UI.ItemView = itemView.(bool)
+        }
+        history, ok := sceneData.ForceUI["history"]
+        if ok {
+            user.UI.History = history.(bool)
+        }
+        currentItem, ok := sceneData.ForceUI["currentItem"]
+        if ok {
+            user.UI.CurrentItem = currentItem.(string)
+        }
+    }
+    if sceneData.GetItem != nil {
+        for _, newItem := range sceneData.GetItem {
+            flag := true
+            for _, item := range user.ItemList {
+                if newItem == item {
+                    flag = false
+                    break
+                }
+            }
+            if flag {
+                user.ItemList = append(user.ItemList, newItem)
+            }
+        }
+    }
+    return nil
+}
 func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap) {
     gameUpdateFunc := func (user *User, requestObj map[string]interface{}) (bool, error) {
         return true, nil
-    }
-    ToNextScene := func (user *User, nextBlock string) error {
-        user.Progress = append(user.Progress, ScenePosition{nextBlock, 0})
-        sceneData, err := ReadScene(nextBlock)
-        if err != nil {
-            return err
-        }
-        if sceneData.ForceUI != nil {
-            QR, ok := sceneData.ForceUI["QR"]
-            if ok {
-                user.UI.QR = QR.(bool)
-            }
-            itemMenu, ok := sceneData.ForceUI["itemMenu"]
-            if ok {
-                user.UI.ItemMenu = itemMenu.(bool)
-            }
-            itemView, ok := sceneData.ForceUI["itemView"]
-            if ok {
-                user.UI.ItemView = itemView.(bool)
-            }
-            history, ok := sceneData.ForceUI["history"]
-            if ok {
-                user.UI.History = history.(bool)
-            }
-            currentItem, ok := sceneData.ForceUI["currentItem"]
-            if ok {
-                user.UI.CurrentItem = currentItem.(string)
-            }
-        }
-        if sceneData.GetItem != nil {
-            for _, newItem := range sceneData.GetItem {
-                flag := true
-                for _, item := range user.ItemList {
-                    if newItem == item {
-                        flag = false
-                        break
-                    }
-                }
-                if flag {
-                    user.ItemList = append(user.ItemList, newItem)
-                }
-            }
-        }
-        return nil
     }
     gameNextUpdateFunc := func (user *User, requestObj map[string]interface{}) (bool, error) {
         currentPosition := user.Progress[len(user.Progress) - 1]
@@ -374,10 +476,12 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
     gameQRHandler := CreateGameHandler(gameQRUpdateFunc, http.MethodPost, true, sessionController, userMap)
     gameAnswerHandler := CreateGameHandler(gameAnswerUpdateFunc, http.MethodPost, true, sessionController, userMap)
     gameUIHandler := CreateGameHandler(gameUIUpdateFunc, http.MethodPost, true, sessionController, userMap)
+    gameDecisionHandler := CreateGameDecisionHandler(sessionController, userMap)
     http.HandleFunc("/" + GamePath, WrapCors(gameHandler))
     http.HandleFunc("/" + GamePath + "/" + NextPath, WrapCors(gameNextHandler))
     http.HandleFunc("/" + GamePath + "/" + QRPath, WrapCors(gameQRHandler))
     http.HandleFunc("/" + GamePath + "/" + AnswerPath, WrapCors(gameAnswerHandler))
     http.HandleFunc("/" + GamePath + "/" + UIPath, WrapCors(gameUIHandler))
+    http.HandleFunc("/" + GamePath + "/" + DecisionPath, WrapCors(gameDecisionHandler))
     RegisterGameItemHandler(sessionController, userMap)
 }

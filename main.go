@@ -18,6 +18,7 @@ const (
     QRPath = "QR"
     AnswerPath = "answer"
     UIPath = "UI"
+    DecisionPath = "decision"
 )
 var ClientHost string
 
