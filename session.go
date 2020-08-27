@@ -12,8 +12,9 @@ import (
 const (
     SessionMaxAge = 1 * time.Hour
     //SessionMaxAge = 10 * time.Second
+    SessionIDLength = 32
 )
-type SessionID [32]byte
+type SessionID [SessionIDLength]byte
 type Session struct {
     Username string
     Timer *time.Timer
@@ -75,7 +76,7 @@ func StringToId(idString string) (SessionID, error) {
     if err != nil {
         return id, err
     }
-    if len(idSlice) != 256 {
+    if len(idSlice) != SessionIDLength {
         return id, fmt.Errorf("Incorrect length %d", len(idSlice))
     }
     copy(id[:], idSlice)
