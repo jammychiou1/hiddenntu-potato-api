@@ -32,6 +32,7 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
         panic(err)
     }
     jsonFile.Close()
+    fmt.Println(itemConfigMap)
     itemListHandler := func (writer http.ResponseWriter, request *http.Request) {
         if request.Method == http.MethodGet {
             username, ok := CheckLogin(sessionController, writer, request)
