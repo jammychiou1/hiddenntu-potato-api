@@ -98,6 +98,7 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
             }
             if len(path) == 4 {
                 writer.Header().Add("Content-Type", "text/plain")
+                fmt.Println("serving", ItemDirectory + "/" + itemConfig.Source)
                 http.ServeFile(writer, request, ItemDirectory + "/" + itemConfig.Source)
                 return
             }
