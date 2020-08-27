@@ -96,6 +96,8 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
                 writer.WriteHeader(http.StatusNotFound)
                 return
             }
+            fmt.Println(path)
+            fmt.Println(itemConfig)
             if len(path) == 4 {
                 writer.Header().Add("Content-Type", "text/plain")
                 fmt.Println("serving", ItemDirectory + "/" + itemConfig.Source)
