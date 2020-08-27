@@ -39,6 +39,7 @@ func ReadScene(sceneName string) (SceneData, error) {
     }
     err = json.NewDecoder(jsonFile).Decode(&result)
     jsonFile.Close()
+    fmt.Println(result)
     return result, err
 }
 
