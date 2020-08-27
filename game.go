@@ -150,7 +150,7 @@ func CreateGameHandler(updateFunc func (*User, map[string]interface{}) (bool, er
         writer.WriteHeader(http.StatusBadRequest)
     }
 }
-func gameQRUpdateFunc(user *User, requestObj map[string]interface{}) (bool, error) {
+func gameDecisionUpdateFunc(user *User, requestObj map[string]interface{}) (bool, error) {
     currentPosition := user.Progress[len(user.Progress) - 1]
     sceneData, err := ReadScene(currentPosition.Scene)
     if err != nil {
@@ -204,7 +204,7 @@ func CreateGameDecisionHandler(sessionController *SessionController, userMap *Us
                 return
             }
             user.Lock.Lock()
-            ok, err = gameQRUpdateFunc(user, requestObj)
+            ok, err = gameDecisionUpdateFunc(user, requestObj)
             if err != nil {
                 writer.WriteHeader(http.StatusInternalServerError)
                 user.Lock.Unlock()

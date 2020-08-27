@@ -13,7 +13,7 @@ const (
     SessionMaxAge = 1 * time.Hour
     //SessionMaxAge = 10 * time.Second
 )
-type SessionID [256]byte
+type SessionID [32]byte
 type Session struct {
     Username string
     Timer *time.Timer
