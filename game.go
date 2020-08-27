@@ -165,10 +165,11 @@ func gameDecisionUpdateFunc(user *User, requestObj map[string]interface{}) (bool
                 return false, nil
             }
             fmt.Printf("%T\n", idInterface)
-            id, ok := idInterface.(int)
+            idFloat, ok := idInterface.(float64)
             if !ok {
                 return false, nil
             }
+            id := int(idFloat)
             fmt.Println(idInterface, ok)
             nextBlockList, ok := sceneData.NextBlock.([]interface{})
             if !ok {
