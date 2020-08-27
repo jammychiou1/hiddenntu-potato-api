@@ -73,6 +73,7 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
                 return
             }
             path := strings.Split(request.URL.Path, "/")
+            fmt.Println(len(path), path)
             if (len(path) < 3) {
                 writer.WriteHeader(http.StatusNotFound)
                 return
