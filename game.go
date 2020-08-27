@@ -342,11 +342,13 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
                         return false, nil
                     }
                     user.UI.ItemView = true
+                    return true, nil
                 } else {
                     if !user.UI.ItemView {
                         return false, nil
                     }
                     user.UI.ItemView = false
+                    return true, nil
                 }
             }
             if target == "history" {
