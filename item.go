@@ -12,9 +12,9 @@ type ItemDescription struct {
     ID string `json:"ID"`
 }
 type ItemConfig struct {
-    Title string
-    Assets []string
-    Source string
+    Title string `json:"title"`
+    Assets []string `json:"asset"`
+    Source string `json:"source"`
 }
 type ItemConfigMap map[string]ItemConfig
 func RegisterGameItemHandler(sessionController *SessionController, userMap *UserMap) {
