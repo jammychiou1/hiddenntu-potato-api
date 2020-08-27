@@ -73,11 +73,11 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
                 return
             }
             path := strings.Split(request.URL.Path, "/")
-            if (len(path) < 4) {
+            if (len(path) < 3) {
                 writer.WriteHeader(http.StatusNotFound)
                 return
             }
-            itemID := path[3]
+            itemID := path[2]
             user.Lock.RLock()
             hasItem := false
             for _, a := range user.ItemList {
@@ -98,14 +98,14 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
             }
             fmt.Println(path)
             fmt.Println(itemConfig)
-            if len(path) == 4 {
+            if len(path) == 3 {
                 writer.Header().Add("Content-Type", "text/plain")
                 fmt.Println("serving", ItemDirectory + "/" + itemConfig.Source)
                 http.ServeFile(writer, request, ItemDirectory + "/" + itemConfig.Source)
                 return
             }
-            if len(path) == 5 {
-                asset := path[4]
+            if len(path) == 4 {
+                asset := path[3]
                 hasAsset := false
                 for _, a := range itemConfig.Assets {
                     if asset == a {
