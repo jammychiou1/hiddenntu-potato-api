@@ -370,15 +370,15 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
         if currentPosition.Position == sceneData.NumLines - 1 {
             if sceneData.TransitionMode == "answer" {
                 nextBlock := ""
-                keyInterface, ok := requestObj["key"]
+                answerInterface, ok := requestObj["answer"]
                 if !ok {
                     return false, nil
                 }
-                key, ok := keyInterface.(string)
+                answer, ok := answerInterface.(string)
                 if !ok {
                     return false, nil
                 }
-                if sceneData.Key == key {
+                if sceneData.Key == answer {
                     nextBlock = sceneData.NextBlock.([]interface{})[0].(string)
                 } else {
                     nextBlock = sceneData.NextBlock.([]interface{})[1].(string)
