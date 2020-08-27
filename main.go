@@ -65,7 +65,7 @@ func WrapCors(h http.HandlerFunc) http.HandlerFunc {
         writer.Header().Add("Access-Control-Allow-Origin", ClientHost)
         writer.Header().Add("Access-Control-Allow-Credentials", "true")
         writer.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
-        writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, " + SessionIDHeaderName)
+        writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, cache-control, " + SessionIDHeaderName)
         writer.Header().Add("Access-Control-Expose-Headers", SessionIDHeaderName)
         if request.Method == http.MethodOptions {
             writer.WriteHeader(http.StatusOK)
