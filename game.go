@@ -156,9 +156,11 @@ func gameDecisionUpdateFunc(user *User, requestObj map[string]interface{}) (bool
     if err != nil {
         return false, err
     }
+    fmt.Println(requestObj)
     if currentPosition.Position == sceneData.NumLines - 1 {
         if sceneData.TransitionMode == "decision" {
             id, ok := requestObj["id"].(int)
+            fmt.Println(id, ok)
             if !ok {
                 return false, nil
             }
