@@ -45,7 +45,7 @@ func main() {
     if os.Getenv("MODE") == "production" {
         ClientHost = "https://www.csie.ntu.edu.tw"
     } else {
-        ClientHost = "http://localhost:9000"
+        ClientHost = "https://192.168.2.109:9000"
     }
     fmt.Println("expecting request from " + ClientHost)
 
@@ -56,7 +56,11 @@ func main() {
     fmt.Println("listening on port " + port)
 
     // Start a web server.
-    http.ListenAndServe(":" + port, nil)
+    if os.Getenv("MODE") == "production" {
+        http.ListenAndServe(":" + port, nil)
+    } else {
+        http.ListenAndServeTLS(":" + port, "server.crt", "server.key", nil)
+    }
 }
 
 func WrapCors(h http.HandlerFunc) http.HandlerFunc {
