@@ -4,6 +4,7 @@ import (
     "fmt"
     "os"
     "net/http"
+    "time"
 )
 
 const (
@@ -19,18 +20,52 @@ const (
     AnswerPath = "answer"
     UIPath = "UI"
     DecisionPath = "decision"
+    AmazonBucketName = "hiddenntu-potato-api"
+    UserFileName = "user.json"
+//    UserSaveCycleTime = 30 * time.Second
+    UserSaveCycleTime = 10 * time.Minute
 )
 var ClientHost string
 
 func main() {
-    userMap := UserMap{
-        Data: map[string]*User{
-            "dao1": &User{
-                Progress: []ScenePosition{{"1_gamestart", 0}},
-                ItemList: []string{},
-            },
-        },
+
+//    userMap := UserMap{
+//        Data: map[string]*User{
+//            "dao1": &User{
+//                Progress: []ScenePosition{{"1_gamestart", 0}},
+//                ItemList: []string{},
+//            },
+//        },
+//    }
+
+    userMap := UserMap{}
+
+    amazonSession := NewAmazonSession()
+
+    err := amazonSession.LoadUserFile(&userMap)
+    if err != nil {
+        fmt.Println(err)
+        return
     }
+
+    userSaveTimer := time.NewTimer(UserSaveCycleTime)
+    defer userSaveTimer.Stop()
+    go func() {
+        for {
+            _ = <-userSaveTimer.C
+            fmt.Println("Saving user file...")
+            err_inside := amazonSession.SaveUserFile(&userMap)
+            if err_inside == nil {
+                fmt.Println("Success")
+            } else {
+                fmt.Println("Failed")
+            }
+            userSaveTimer.Stop()
+            userSaveTimer.Reset(UserSaveCycleTime)
+        }
+    }()
+
+//    amazonSession.SaveUserFile(&userMap)
 
     sessionController := SessionController{
         SessionMap: map[SessionID]Session{},
@@ -49,13 +84,11 @@ func main() {
     }
     fmt.Println("expecting request from " + ClientHost)
 
-    // Listen to the root path of the web app
     RegisterSessionHandlers(&sessionController, &userMap)
     RegisterGameHandlers(&sessionController, &userMap)
 
     fmt.Println("listening on port " + port)
 
-    // Start a web server.
     if os.Getenv("MODE") == "production" {
         http.ListenAndServe(":" + port, nil)
     } else {
