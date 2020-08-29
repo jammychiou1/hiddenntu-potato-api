@@ -1,0 +1,20 @@
+{
+    "data": {
+        "dao1": {
+            "progress": [
+                {
+                    "Scene": "1_gamestart",
+                    "Position": 0
+                }
+            ],
+            "itemList": [],
+            "UI": {
+                "QR": false,
+                "itemMenu": false,
+                "itemView": false,
+                "history": false,
+                "currentItem": ""
+            }
+        }
+    }
+}
