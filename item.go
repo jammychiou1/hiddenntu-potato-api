@@ -32,7 +32,7 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
         panic(err)
     }
     jsonFile.Close()
-    fmt.Println(itemConfigMap)
+    //fmt.Println(itemConfigMap)
     itemListHandler := func (writer http.ResponseWriter, request *http.Request) {
         if request.Method == http.MethodGet {
             username, ok := CheckLogin(sessionController, writer, request)
@@ -76,7 +76,7 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
                 return
             }
             path := strings.Split(request.URL.Path, "/")
-            fmt.Println(len(path), path)
+            //fmt.Println(len(path), path)
             if (len(path) < 4) {
                 writer.WriteHeader(http.StatusNotFound)
                 return
@@ -100,8 +100,8 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
                 writer.WriteHeader(http.StatusNotFound)
                 return
             }
-            fmt.Println(path)
-            fmt.Println(itemConfig)
+            //fmt.Println(path)
+            //fmt.Println(itemConfig)
             if len(path) == 4 {
                 writer.Header().Add("Content-Type", "text/plain")
                 fmt.Println("serving", ItemDirectory + "/" + itemConfig.Source)

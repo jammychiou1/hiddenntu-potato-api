@@ -123,7 +123,7 @@ func CreateSessionHandler(sessionController *SessionController, userMap *UserMap
         }
         if request.Method == http.MethodPost {
             if request.Header.Get("Content-Type") != "application/json" {
-                fmt.Println("Not json")
+                //fmt.Println("Not json")
                 writer.WriteHeader(http.StatusBadRequest)
                 return
             }

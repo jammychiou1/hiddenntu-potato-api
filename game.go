@@ -40,7 +40,7 @@ func ReadScene(sceneName string) (SceneData, error) {
     }
     err = json.NewDecoder(jsonFile).Decode(&result)
     jsonFile.Close()
-    fmt.Println(result)
+    //fmt.Println(result)
     return result, err
 }
 
@@ -163,21 +163,21 @@ func gameDecisionUpdateFunc(user *User, requestObj map[string]interface{}) (bool
     if err != nil {
         return false, err
     }
-    fmt.Println(requestObj)
+    //fmt.Println(requestObj)
     if currentPosition.Position == sceneData.NumLines - 1 {
         if sceneData.TransitionMode == "decision" {
             idInterface, ok := requestObj["id"]
-            fmt.Println(idInterface, ok)
+            //fmt.Println(idInterface, ok)
             if !ok {
                 return false, nil
             }
-            fmt.Printf("%T\n", idInterface)
+            //fmt.Printf("%T\n", idInterface)
             idFloat, ok := idInterface.(float64)
             if !ok {
                 return false, nil
             }
             id := int(idFloat)
-            fmt.Println(idInterface, ok)
+            //fmt.Println(idInterface, ok)
             nextBlockList, ok := sceneData.NextBlock.([]interface{})
             if !ok {
                 return false, fmt.Errorf("scene config next block wrong format")
@@ -405,7 +405,7 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
         return true, nil
     }
     gameUIUpdateFunc := func (user *User, requestObj map[string]interface{}) (bool, error) {
-        fmt.Println(requestObj)
+        //fmt.Println(requestObj)
         targetInterface, ok := requestObj["target"]
         if !ok {
             return false, nil
