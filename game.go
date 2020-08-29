@@ -68,14 +68,11 @@ func ReadSceneQuote(sceneName string, index int) (Quote, error) {
     return Quote{allQuotes[index][0], allQuotes[index][1]}, nil
 }
 func GetCurrentUser(username string, userMap *UserMap, writer http.ResponseWriter, request *http.Request) (*User, bool) {
-    userMap.Lock.RLock()
     user, ok := userMap.Data[username]
     if !ok {
         writer.WriteHeader(http.StatusInternalServerError)
-        userMap.Lock.RUnlock()
         return nil, false
     }
-    userMap.Lock.RUnlock()
     return user, true
 }
 func WriteClientStatus(user *User, writer http.ResponseWriter) {
@@ -108,12 +105,19 @@ func WriteClientStatus(user *User, writer http.ResponseWriter) {
     writer.WriteHeader(http.StatusOK)
     json.NewEncoder(writer).Encode(clientStatus)
 }
-func CreateGameHandler(updateFunc func (*User, map[string]interface{}) (bool, error), method string, requireJson bool, sessionController *SessionController, userMap *UserMap) http.HandlerFunc {
+func CreateGameHandler(updateFunc func (*User, map[string]interface{}) (bool, error), method string, requireJson bool, readOnly bool, sessionController *SessionController, userMap *UserMap) http.HandlerFunc {
     return func (writer http.ResponseWriter, request *http.Request) {
         if request.Method == method {
             username, ok := CheckLogin(sessionController, writer, request)
             if !ok {
                 return
+            }
+            if readOnly {
+                userMap.Lock.RLock()
+                defer userMap.Lock.RUnlock()
+            } else {
+                userMap.Lock.Lock()
+                defer userMap.Lock.Unlock()
             }
             user, ok := GetCurrentUser(username, userMap, writer, request)
             if !ok {
@@ -131,20 +135,23 @@ func CreateGameHandler(updateFunc func (*User, map[string]interface{}) (bool, er
                     return
                 }
             }
-            user.Lock.Lock()
+            if readOnly {
+                user.Lock.RLock()
+                defer user.Lock.RUnlock()
+            } else {
+                user.Lock.Lock()
+                defer user.Lock.Unlock()
+            }
             ok, err := updateFunc(user, requestObj)
             if err != nil {
                 writer.WriteHeader(http.StatusInternalServerError)
-                user.Lock.Unlock()
                 return
             }
             if !ok {
                 writer.WriteHeader(http.StatusBadRequest)
-                user.Lock.Unlock()
                 return
             }
             WriteClientStatus(user, writer)
-            user.Lock.Unlock()
             return
         }
         writer.WriteHeader(http.StatusBadRequest)
@@ -198,6 +205,8 @@ func CreateGameDecisionHandler(sessionController *SessionController, userMap *Us
             if !ok {
                 return
             }
+            userMap.Lock.Lock()
+            defer userMap.Lock.Unlock()
             user, ok := GetCurrentUser(username, userMap, writer, request)
             if !ok {
                 return
@@ -213,19 +222,17 @@ func CreateGameDecisionHandler(sessionController *SessionController, userMap *Us
                 return
             }
             user.Lock.Lock()
+            defer user.Lock.Unlock()
             ok, err = gameDecisionUpdateFunc(user, requestObj)
             if err != nil {
                 writer.WriteHeader(http.StatusInternalServerError)
-                user.Lock.Unlock()
                 return
             }
             if !ok {
                 writer.WriteHeader(http.StatusBadRequest)
-                user.Lock.Unlock()
                 return
             }
             WriteClientStatus(user, writer)
-            user.Lock.Unlock()
             return
         }
         if request.Method == http.MethodGet {
@@ -233,19 +240,20 @@ func CreateGameDecisionHandler(sessionController *SessionController, userMap *Us
             if !ok {
                 return
             }
+            userMap.Lock.RLock()
+            defer userMap.Lock.RUnlock()
             user, ok := GetCurrentUser(username, userMap, writer, request)
             if !ok {
                 return
             }
-            user.Lock.Lock()
+            user.Lock.RLock()
+            defer user.Lock.RUnlock()
             currentPosition := user.Progress[len(user.Progress) - 1]
             sceneData, err := ReadScene(currentPosition.Scene)
             if err != nil {
                 writer.WriteHeader(http.StatusInternalServerError)
-                user.Lock.Unlock()
                 return
             }
-            user.Lock.Unlock()
             if currentPosition.Position == sceneData.NumLines - 1 {
                 if sceneData.TransitionMode == "decision" {
                     writer.Header().Add("Content-Type", "application/json")
@@ -500,11 +508,11 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
         }
         return false, nil
     }
-    gameHandler := CreateGameHandler(gameUpdateFunc , http.MethodGet, false, sessionController, userMap)
-    gameNextHandler := CreateGameHandler(gameNextUpdateFunc, http.MethodPost, false, sessionController, userMap)
-    gameQRHandler := CreateGameHandler(gameQRUpdateFunc, http.MethodPost, true, sessionController, userMap)
-    gameAnswerHandler := CreateGameHandler(gameAnswerUpdateFunc, http.MethodPost, true, sessionController, userMap)
-    gameUIHandler := CreateGameHandler(gameUIUpdateFunc, http.MethodPost, true, sessionController, userMap)
+    gameHandler := CreateGameHandler(gameUpdateFunc , http.MethodGet, false, true, sessionController, userMap)
+    gameNextHandler := CreateGameHandler(gameNextUpdateFunc, http.MethodPost, false, false, sessionController, userMap)
+    gameQRHandler := CreateGameHandler(gameQRUpdateFunc, http.MethodPost, true, false, sessionController, userMap)
+    gameAnswerHandler := CreateGameHandler(gameAnswerUpdateFunc, http.MethodPost, true, false, sessionController, userMap)
+    gameUIHandler := CreateGameHandler(gameUIUpdateFunc, http.MethodPost, true, false, sessionController, userMap)
     gameDecisionHandler := CreateGameDecisionHandler(sessionController, userMap)
     http.HandleFunc("/" + GamePath, WrapCors(gameHandler))
     http.HandleFunc("/" + GamePath + "/" + NextPath, WrapCors(gameNextHandler))

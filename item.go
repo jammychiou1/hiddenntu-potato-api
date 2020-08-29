@@ -39,22 +39,23 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
             if !ok {
                 return
             }
+            userMap.Lock.RLock()
+            defer userMap.Lock.RUnlock()
             user, ok := GetCurrentUser(username, userMap, writer, request)
             if !ok {
                 return
             }
             user.Lock.RLock()
+            defer user.Lock.RUnlock()
             itemList := make([]ItemDescription, len(user.ItemList))
             for i, item := range user.ItemList {
                 itemConfig, ok := itemConfigMap[item]
                 if !ok {
                     writer.WriteHeader(http.StatusNotFound)
-                    user.Lock.RUnlock()
                     return
                 }
                 itemList[i] = ItemDescription{itemConfig.Title, item}
             }
-            user.Lock.RUnlock()
             writer.Header().Add("Content-Type", "application/json")
             writer.WriteHeader(http.StatusOK)
             json.NewEncoder(writer).Encode(itemList)
@@ -68,6 +69,8 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
             if !ok {
                 return
             }
+            userMap.Lock.RLock()
+            defer userMap.Lock.RUnlock()
             user, ok := GetCurrentUser(username, userMap, writer, request)
             if !ok {
                 return
@@ -80,6 +83,7 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
             }
             itemID := path[3]
             user.Lock.RLock()
+            defer user.Lock.RUnlock()
             hasItem := false
             for _, a := range user.ItemList {
                 if itemID == a {
@@ -87,7 +91,6 @@ func RegisterGameItemHandler(sessionController *SessionController, userMap *User
                     break
                 }
             }
-            user.Lock.RUnlock()
             if !hasItem {
                 writer.WriteHeader(http.StatusNotFound)
                 return
