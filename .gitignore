@@ -1,6 +1,5 @@
 go.sum
 hiddenntu-potato-api
 *.swp
-*.py
 server.crt
 server.key
