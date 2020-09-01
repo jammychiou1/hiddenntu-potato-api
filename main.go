@@ -20,6 +20,7 @@ const (
     AnswerPath = "answer"
     UIPath = "UI"
     DecisionPath = "decision"
+    HistoryPath = "history"
     AmazonBucketName = "hiddenntu-potato-api"
     UserFileName = "user.json"
 //    UserSaveCycleTime = 30 * time.Second

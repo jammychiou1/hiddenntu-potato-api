@@ -20,8 +20,8 @@ type SceneData struct {
 }
 
 type Quote struct {
-    Name string
-    Sentence string
+    Name string `json:"name"`
+    Sentence string `json:"text"`
 }
 
 type ClientStatus struct {
@@ -59,7 +59,6 @@ func ReadSceneQuote(sceneName string, index int) (Quote, error) {
         return Quote{}, err
     }
     if index >= len(allQuotes) {
-        csvFile.Close()
         return Quote{}, fmt.Errorf("Index (%d) exceding length (%d) of scene %s", index, len(allQuotes), sceneName)
     }
     if len(allQuotes[index]) != 3 {
@@ -134,6 +133,7 @@ func CreateGameHandler(updateFunc func (*User, map[string]interface{}) (bool, er
                     writer.WriteHeader(http.StatusBadRequest)
                     return
                 }
+                fmt.Println(requestObj)
             }
             if readOnly {
                 user.Lock.RLock()
@@ -221,6 +221,7 @@ func CreateGameDecisionHandler(sessionController *SessionController, userMap *Us
                 writer.WriteHeader(http.StatusBadRequest)
                 return
             }
+            fmt.Println(requestObj)
             user.Lock.Lock()
             defer user.Lock.Unlock()
             ok, err = gameDecisionUpdateFunc(user, requestObj)
@@ -263,6 +264,56 @@ func CreateGameDecisionHandler(sessionController *SessionController, userMap *Us
                 }
             }
             writer.WriteHeader(http.StatusBadRequest)
+            return
+        }
+        writer.WriteHeader(http.StatusBadRequest)
+    }
+}
+func CreateGameHistoryHandler(sessionController *SessionController, userMap *UserMap) http.HandlerFunc {
+    return func (writer http.ResponseWriter, request *http.Request) {
+        if request.Method == http.MethodGet {
+            username, ok := CheckLogin(sessionController, writer, request)
+            if !ok {
+                return
+            }
+            userMap.Lock.RLock()
+            defer userMap.Lock.RUnlock()
+            user, ok := GetCurrentUser(username, userMap, writer, request)
+            if !ok {
+                return
+            }
+            user.Lock.RLock()
+            defer user.Lock.RUnlock()
+            list := []Quote{}
+            for _, position := range user.Progress {
+                sceneData, err := ReadScene(position.Scene)
+                csvFile, err := os.Open(ScriptDirectory + "/" + position.Scene + ".csv")
+                if err != nil {
+                    csvFile.Close()
+                    writer.WriteHeader(http.StatusInternalServerError)
+                    return
+                }
+                allQuotes, err := csv.NewReader(csvFile).ReadAll()
+                csvFile.Close()
+                if err != nil {
+                    writer.WriteHeader(http.StatusInternalServerError)
+                    return
+                }
+                if position.Position < 0 || position.Position >= sceneData.NumLines {
+                    writer.WriteHeader(http.StatusInternalServerError)
+                    return
+                }
+                for i := 0; i <= position.Position; i++ {
+                    if len(allQuotes[i]) != 3 {
+                        writer.WriteHeader(http.StatusInternalServerError)
+                        return
+                    }
+                    list = append(list, Quote{allQuotes[i][0], allQuotes[i][1]})
+                }
+            }
+            writer.Header().Add("Content-Type", "application/json")
+            writer.WriteHeader(http.StatusOK)
+            json.NewEncoder(writer).Encode(list)
             return
         }
         writer.WriteHeader(http.StatusBadRequest)
@@ -514,11 +565,13 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
     gameAnswerHandler := CreateGameHandler(gameAnswerUpdateFunc, http.MethodPost, true, false, sessionController, userMap)
     gameUIHandler := CreateGameHandler(gameUIUpdateFunc, http.MethodPost, true, false, sessionController, userMap)
     gameDecisionHandler := CreateGameDecisionHandler(sessionController, userMap)
+    gameHistoryHandler := CreateGameHistoryHandler(sessionController, userMap)
     http.HandleFunc("/" + GamePath, WrapCors(gameHandler))
     http.HandleFunc("/" + GamePath + "/" + NextPath, WrapCors(gameNextHandler))
     http.HandleFunc("/" + GamePath + "/" + QRPath, WrapCors(gameQRHandler))
     http.HandleFunc("/" + GamePath + "/" + AnswerPath, WrapCors(gameAnswerHandler))
     http.HandleFunc("/" + GamePath + "/" + UIPath, WrapCors(gameUIHandler))
     http.HandleFunc("/" + GamePath + "/" + DecisionPath, WrapCors(gameDecisionHandler))
+    http.HandleFunc("/" + GamePath + "/" + HistoryPath, WrapCors(gameHistoryHandler))
     RegisterGameItemHandler(sessionController, userMap)
 }
