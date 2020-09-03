@@ -10,6 +10,7 @@ import (
 const (
     SessionIDHeaderName = "Potato-Session-Id"
     ClearSessionIDHeaderName = "Clear-Potato-Session-Id"
+    CardAPIKeyHeaderName = "Card-Api-Key"
     ScriptDirectory = "script"
     ItemDirectory = "item"
     ItemConfigFileName = "items.json"

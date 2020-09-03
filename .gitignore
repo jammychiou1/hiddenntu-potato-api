@@ -3,3 +3,4 @@ hiddenntu-potato-api
 *.swp
 server.crt
 server.key
+card_api_key

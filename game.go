@@ -375,7 +375,11 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
         }
         if currentPosition.Position == sceneData.NumLines - 1 {
             if sceneData.TransitionMode == "next" {
-                err = ToNextScene(user, sceneData.NextBlock.(string))
+                nextBlock, ok := sceneData.NextBlock.(string)
+                if !ok {
+                    return false, fmt.Errorf("nextblock in scene config in wrong format")
+                }
+                err = ToNextScene(user, nextBlock)
                 if err != nil {
                     return false, err
                 }
@@ -574,4 +578,5 @@ func RegisterGameHandlers(sessionController *SessionController, userMap *UserMap
     http.HandleFunc("/" + GamePath + "/" + DecisionPath, WrapCors(gameDecisionHandler))
     http.HandleFunc("/" + GamePath + "/" + HistoryPath, WrapCors(gameHistoryHandler))
     RegisterGameItemHandler(sessionController, userMap)
+    RegisterGameCardHandler(sessionController, userMap)
 }
