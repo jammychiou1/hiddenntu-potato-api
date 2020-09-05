@@ -1,12 +1,9 @@
 {
     "lines": 2,
     "cutscene": false,
-    "nextBlock": [
-        "11question",
-        "11QRwrong"
-    ],
-    "transitionMode": "QR",
-    "key": "11_soclib2727126",
+    "nextBlock": "11question",
+    "transitionMode": "card",
+    "key": "soclib",
     "getItem": [
         "diary3"
     ],

@@ -1,10 +1,7 @@
 {
     "lines": 29,
     "cutscene": false,
-    "nextBlock": [
-        "2_library",
-        "1wrong"
-    ],
-    "transitionMode": "QR",
-    "key": "1_gamestart677913"
+    "nextBlock": "2_library",
+    "transitionMode": "card",
+    "key": "library"
 }

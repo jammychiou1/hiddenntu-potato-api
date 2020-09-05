@@ -1,10 +1,7 @@
 {
     "lines": 1,
     "cutscene": false,
-    "nextBlock": [
-        "18_fu2",
-        "17wrong"
-    ],
-    "transitionMode": "QR",
-    "key": "17_fu1783239"
+    "nextBlock": "18_fu2",
+    "transitionMode": "card",
+    "key": "fu"
 }
