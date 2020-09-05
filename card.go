@@ -9,6 +9,7 @@ import (
     "strings"
 )
 const (
+    CardAPIKeyHeaderName = "Card-Api-Key"
     CardPath = "card"
 )
 type CardRequest struct {
@@ -29,18 +30,21 @@ func CreateGameCardHandler(sessionController *SessionController, userMap *UserMa
     fmt.Printf("cardAPIKey: \"%s\"\n", cardAPIKey)
     return func (writer http.ResponseWriter, request *http.Request) {
         if request.Method == http.MethodPost {
-            key := request.Header.Get(SessionIDHeaderName)
+            key := request.Header.Get(CardAPIKeyHeaderName)
+            fmt.Printf("got key %s\n", key)
             if key != cardAPIKey {
                 writer.WriteHeader(http.StatusUnauthorized)
                 return
             }
             if request.Header.Get("Content-Type") != "application/json" {
+                fmt.Printf("not json\n")
                 writer.WriteHeader(http.StatusBadRequest)
                 return
             }
             cardRequest := CardRequest{}
             err := json.NewDecoder(request.Body).Decode(&cardRequest)
             if err != nil {
+                fmt.Printf("bad body\n")
                 writer.WriteHeader(http.StatusBadRequest)
                 return
             }
@@ -48,6 +52,7 @@ func CreateGameCardHandler(sessionController *SessionController, userMap *UserMa
             defer userMap.Lock.Unlock()
             user, ok := userMap.Data[cardRequest.Username]
             if !ok {
+                fmt.Printf("user not found\n")
                 writer.WriteHeader(http.StatusBadRequest)
                 return
             }
